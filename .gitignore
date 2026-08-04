@@ -28,6 +28,7 @@ build/
 *.gz
 *.md
 !README.md
+!SECURITY_POLICY.md
 .gemini/
 scratch/
 .antigravity/
