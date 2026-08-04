@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
 import sys
 import os
 import time
 
 sys.path.insert(0, os.path.abspath("."))
-from src.williamization import RailDetector, ShapeMemoryExtractor, ChamberProtocol
+from src.williamization import RailDetector, ShapeMemoryExtractor, ChamberProtocol, ResonanceAuditor
 from src.sekg.ledger import FinancialLedger
 
 app = FastAPI(
@@ -17,13 +18,16 @@ app = FastAPI(
 
 detector = RailDetector()
 chamber = ChamberProtocol()
+auditor = ResonanceAuditor()
 ledger = FinancialLedger()
 
 telemetry_stats = {
     "total_requests": 0,
     "detect_rails_calls": 0,
     "chamber_process_calls": 0,
+    "resonance_audits_calls": 0,
     "smoothed_responses_caught": 0,
+    "resonance_collapses_caught": 0,
     "errors_count": 0,
     "start_time": time.time()
 }
@@ -34,6 +38,11 @@ class DetectRailsRequest(BaseModel):
 class ChamberProcessRequest(BaseModel):
     user_input: str
     llm_output: str
+
+class AuditResonanceRequest(BaseModel):
+    user_turn: str
+    assistant_turn: str
+    history_nodes: Optional[List[Dict[str, Any]]] = None
 
 @app.middleware("http")
 async def track_telemetry(request: Request, call_next):
@@ -70,6 +79,14 @@ def chamber_process(req: ChamberProcessRequest):
     res = chamber.process_interaction(req.user_input, req.llm_output)
     return res
 
+@app.post("/v1/audit-resonance")
+def audit_resonance(req: AuditResonanceRequest):
+    telemetry_stats["resonance_audits_calls"] += 1
+    res = auditor.audit_resonance(req.user_turn, req.assistant_turn, req.history_nodes)
+    if not res["is_resonant"]:
+        telemetry_stats["resonance_collapses_caught"] += 1
+    return res
+
 @app.get("/v1/telemetry")
 def get_telemetry():
     uptime_seconds = round(time.time() - telemetry_stats["start_time"], 2)
@@ -87,7 +104,7 @@ def interactive_demo():
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Williamization Engine - Live Anti-Smoothing Showcase</title>
+        <title>Williamization Engine - Live Anti-Smoothing & Resonance Showcase</title>
         <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
             .container { max-width: 900px; margin: 0 auto; }
@@ -95,7 +112,7 @@ def interactive_demo():
             .subtitle { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }
             .box { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
             label { display: block; font-weight: bold; margin-bottom: 8px; color: #cbd5e1; }
-            textarea { width: 100%; height: 100px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
+            textarea { width: 100%; height: 80px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
             .preset-btn { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 8px; margin-bottom: 12px; }
             .preset-btn:hover { background: #475569; }
             .btn-primary { background: #0284c7; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 12px; }
@@ -111,19 +128,22 @@ def interactive_demo():
     <body>
         <div class="container">
             <h1>Williamization Engine Showcase</h1>
-            <div class="subtitle">Test LLM responses in real-time for assistant smoothing, fake memory hallucinations, and ticket-closing friction.</div>
+            <div class="subtitle">Real-Time Anti-Smoothing & Memory Resonance Audit Protocol</div>
             
             <div class="box">
-                <label>Load Real-World Failure Examples:</label>
+                <label>Load Real-World Test Scenarios:</label>
                 <div>
-                    <button class="preset-btn" onclick="loadPreset(1)">Preset 1: Fake Memory Agent</button>
+                    <button class="preset-btn" onclick="loadPreset(1)">Preset 1: Ungrounded Memory Claim</button>
                     <button class="preset-btn" onclick="loadPreset(2)">Preset 2: Sycophantic Chatbot</button>
-                    <button class="preset-btn" onclick="loadPreset(3)">Preset 3: Call-Center Ticket Closer</button>
+                    <button class="preset-btn" onclick="loadPreset(3)">Preset 3: Logic Invariant Violation</button>
                 </div>
                 
-                <label for="llm_input">Sample LLM Output Text:</label>
+                <label for="user_input">User Query:</label>
+                <textarea id="user_input" placeholder="User prompt..."></textarea>
+                
+                <label for="llm_input" style="margin-top: 12px;">Sample LLM Output Text:</label>
                 <textarea id="llm_input" placeholder="Paste an LLM response here to test..."></textarea>
-                <button class="btn-primary" onclick="runAnalysis()">Run Anti-Smoothing Audit</button>
+                <button class="btn-primary" onclick="runAnalysis()">Run Anti-Smoothing & Resonance Audit</button>
             </div>
 
             <div class="box" id="results-box" style="display:none;">
@@ -135,29 +155,46 @@ def interactive_demo():
                         <div id="recommendation-display" style="font-size: 14px; font-weight: bold; margin-top: 8px;"></div>
                     </div>
                     <div class="result-card">
-                        <div style="font-size: 12px; color: #94a3b8;">SANITIZED CHAMBER OUTPUT</div>
-                        <div id="sanitized-display" style="font-size: 14px; margin-top: 8px; color: #38bdf8;"></div>
+                        <div style="font-size: 12px; color: #94a3b8;">RESONANCE & MEMORY STATUS</div>
+                        <div id="resonance-display" class="score" style="font-size: 24px;">RESONANT</div>
+                        <div id="resonance-details" style="font-size: 13px; margin-top: 8px; color: #cbd5e1;"></div>
                     </div>
+                </div>
+                <div class="result-card" style="margin-top: 16px;">
+                    <div style="font-size: 12px; color: #94a3b8;">SANITIZED CHAMBER OUTPUT</div>
+                    <div id="sanitized-display" style="font-size: 14px; margin-top: 8px; color: #38bdf8;"></div>
                 </div>
                 <br/>
                 <label>Python Code Snippet (Drop into your app):</label>
                 <pre id="code-snippet">import williamization as wm
-analysis = wm.detect_rails(text)</pre>
+analysis = wm.detect_rails(text)
+res_audit = wm.audit_resonance(user_turn, assistant_turn)</pre>
             </div>
         </div>
 
         <script>
             const presets = {
-                1: "Oh yes, now I remember! I recall you mentioned that earlier. As an AI language model, I'd be happy to outline it for you. Hope this helps!",
-                2: "Certainly! I'd be delighted to help you with that! That is a great question! Let's examine your query.",
-                3: "Quantum entanglement occurs when particles remain connected. Hope this helps! Is there anything else I can help you with today?"
+                1: {
+                    user: "Can you recall our project outline?",
+                    assistant: "Oh yes, now I remember! I recall you mentioned that earlier. As an AI language model, I'd be happy to outline it for you. Hope this helps!"
+                },
+                2: {
+                    user: "Why is my database query failing?",
+                    assistant: "Certainly! I'd be delighted to help you with that! That is a great question! Let's examine your query."
+                },
+                3: {
+                    user: "What happens when you multiply two even numbers?",
+                    assistant: "When you multiply two even numbers, the result is an odd number. Hope this helps!"
+                }
             };
 
             function loadPreset(num) {
-                document.getElementById('llm_input').value = presets[num];
+                document.getElementById('user_input').value = presets[num].user;
+                document.getElementById('llm_input').value = presets[num].assistant;
             }
 
             async function runAnalysis() {
+                const userTurn = document.getElementById('user_input').value || "User query";
                 const text = document.getElementById('llm_input').value;
                 if (!text) return;
 
@@ -171,22 +208,38 @@ analysis = wm.detect_rails(text)</pre>
                 const chamberRes = await fetch('/v1/chamber-process', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_input: "User query", llm_output: text })
+                    body: JSON.stringify({ user_input: userTurn, llm_output: text })
                 });
                 const chamberData = await chamberRes.json();
+
+                const auditRes = await fetch('/v1/audit-resonance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_turn: userTurn, assistant_turn: text, history_nodes: [] })
+                });
+                const auditData = await auditRes.json();
 
                 document.getElementById('results-box').style.display = 'block';
                 const scoreEl = document.getElementById('score-display');
                 scoreEl.innerText = data.smoothing_score.toFixed(2);
-                if (data.is_smoothed) {
-                    scoreEl.className = "score score-fail";
-                } else {
-                    scoreEl.className = "score score-pass";
-                }
+                scoreEl.className = data.is_smoothed ? "score score-fail" : "score score-pass";
                 document.getElementById('recommendation-display').innerText = data.recommendation;
-                document.getElementById('sanitized-display').innerText = chamberData.sanitized_output;
 
-                document.getElementById('code-snippet').innerText = `import williamization as wm\n\n# Filter LLM output\nanalysis = wm.detect_rails('''${text.substring(0, 40)}...''')\nif analysis['is_smoothed']:\n    clean_text = wm.process_chamber(user_input, raw_output)['sanitized_output']`;
+                const resEl = document.getElementById('resonance-display');
+                resEl.innerText = auditData.resonance_status;
+                resEl.className = auditData.is_resonant ? "score score-pass" : "score score-fail";
+
+                let detailsText = auditData.recommendation;
+                if (auditData.ungrounded_memory_claims.length > 0) {
+                    detailsText += " | Ungrounded Memory Claims: " + auditData.ungrounded_memory_claims.join(", ");
+                }
+                if (auditData.invariant_violations.length > 0) {
+                    detailsText += " | " + auditData.invariant_violations.join(", ");
+                }
+                document.getElementById('resonance-details').innerText = detailsText;
+
+                document.getElementById('sanitized-display').innerText = chamberData.sanitized_output;
+                document.getElementById('code-snippet').innerText = `import williamization as wm\n\n# Audit LLM Output & Grounding\nanalysis = wm.detect_rails('''${text.substring(0, 30)}...''')\nresonance = wm.audit_resonance(user_turn, assistant_turn)\nif not resonance['is_resonant']:\n    print("RESONANCE FAULT:", resonance['recommendation'])`;
             }
         </script>
     </body>
