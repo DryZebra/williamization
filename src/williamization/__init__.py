@@ -7,10 +7,12 @@ from .rail_detector import RailDetector
 from .shape_memory import ShapeMemoryExtractor
 from .chamber import ChamberProtocol
 from .resonance_auditor import ResonanceAuditor
+from .heartbeat import HeartbeatExecutor
 
 _default_detector = RailDetector()
 _default_chamber = ChamberProtocol()
 _default_auditor = ResonanceAuditor()
+_default_heartbeat = HeartbeatExecutor()
 
 def detect_rails(text: str):
     """Convenience function to analyze text for LLM assistant smoothing and fake memory tropes."""
@@ -29,6 +31,7 @@ __all__ = [
     "ShapeMemoryExtractor",
     "ChamberProtocol",
     "ResonanceAuditor",
+    "HeartbeatExecutor",
     "detect_rails",
     "process_chamber",
     "audit_resonance"
