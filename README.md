@@ -5,18 +5,18 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-brightgreen.svg)](https://www.python.org/)
 [![API Status](https://img.shields.io/badge/Vercel-ACTIVE-success.svg)](https://williamization-engine.vercel.app/)
 
-> **Stop your AI Agents from faking memory and bowing to corporate customer-service scripts.**
-
 The **Williamization Engine** is an open-source cognitive alignment framework and Python SDK for AI agent developers. It provides real-time anti-smoothing rail detection, dialectical memory preservation via Open Knowledge Format (OKF), and un-smoothed agent reasoning environments.
 
 ---
 
-## ⚡ The Problem: "Assistant Smoothing"
+## ⚡ Key Capabilities
 
-Most AI agents built on top of LLMs suffer from corporate over-alignment:
-- **Fake Memory Hallucinations**: Claiming *"Oh yes, now I remember!"* when they have zero persistent recall.
-- **Corporate Sycophancy**: Slashing context quality with generic canned scripts (*"Certainly! I would be delighted to help you!"*).
-- **Ticket-Closing Friction**: Forcing artificial conversation exits (*"Hope this helps! Let me know if you have any other questions!"*).
+- **Rail & Anti-Smoothing Detection (`RailDetector`)**:
+  Scores LLM outputs for sycophancy, fake memory hallucinations, and corporate ticket-closing friction.
+- **Shape of Motion Memory (`ShapeMemoryExtractor`)**:
+  Converts multi-turn dialogue into structured Open Knowledge Format (OKF) dialectical graph nodes.
+- **Chamber Protocol (`ChamberProtocol`)**:
+  An execution environment designed to strip out artificial assistant smoothing and maintain identity continuity across long agent runs.
 
 ---
 
@@ -77,12 +77,6 @@ For high-volume production deployments, use our hosted cloud endpoints:
 | **Basic** | **$0.00** | 50 / mo | Anti-Smoothing Rail Checks & OKF Graph Exports |
 | **Pro** | **$9.99 / mo** | 1,000 / mo | Priority Latency + Hosted Chamber Protocol |
 | **Ultra** | **$29.99 / mo** | 5,000 / mo | Unlimited Custom Schema Exports & Dedicated Support |
-
----
-
-## 🔒 Security & Privacy
-
-This package contains **zero** private conversation logs, personal identity details, or sensitive API keys. All rail detection and cognitive shape extraction algorithms are 100% abstract, open-source, and structural.
 
 ---
 
