@@ -52,19 +52,18 @@ def create_and_push_github():
         "git add .",
         "git commit -m \"Initial commit: Williamization Engine & Chamber of Motion Protocol\"",
         "git branch -M main",
-        f"git remote remove origin",
+        "git remote remove origin",
         f"git remote add origin {remote_url}",
         "git push -u origin main --force"
     ]
 
     for cmd in commands:
-        res = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=os.getcwd())
-        # Print output without exposing token
+        res = subprocess.run(cmd, shell=True, capture_output=True, text=True, errors="ignore", cwd=os.getcwd())
         clean_cmd = cmd.replace(remote_url, "https://github.com/DryZebra/williamization.git")
         if res.returncode == 0:
             print(f"[PASS] {clean_cmd}")
         else:
-            print(f"[WARN] {clean_cmd}: {res.stderr.strip()}")
+            print(f"[WARN] {clean_cmd}: {res.stderr.strip() if res.stderr else ''}")
 
     print(f"\n>>> REPOSITORY PUSHED TO GITHUB: https://github.com/DryZebra/williamization <<<")
     return True

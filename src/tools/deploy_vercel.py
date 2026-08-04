@@ -33,4 +33,8 @@ def deploy_to_vercel():
             print(f"[FAIL] Vercel deploy exited with code {res.returncode}")
             return False
     except Exception as e:
-        
+        print(f"[FAIL] Error running vercel deploy: {e}")
+        return False
+
+if __name__ == "__main__":
+    deploy_to_vercel()
