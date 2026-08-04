@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.abspath("."))
 from src.williamization import RailDetector, ShapeMemoryExtractor, ChamberProtocol
@@ -18,6 +19,16 @@ detector = RailDetector()
 chamber = ChamberProtocol()
 ledger = FinancialLedger()
 
+# In-memory telemetry counter
+telemetry_stats = {
+    "total_requests": 0,
+    "detect_rails_calls": 0,
+    "chamber_process_calls": 0,
+    "smoothed_responses_caught": 0,
+    "errors_count": 0,
+    "start_time": time.time()
+}
+
 class DetectRailsRequest(BaseModel):
     text: str
 
@@ -25,24 +36,49 @@ class ChamberProcessRequest(BaseModel):
     user_input: str
     llm_output: str
 
+@app.middleware("http")
+async def track_telemetry(request: Request, call_next):
+    telemetry_stats["total_requests"] += 1
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        telemetry_stats["errors_count"] += 1
+        return JSONResponse(status_code=500, content={"error": "Internal Server Error", "details": str(e)})
+
 @app.get("/")
 def read_root():
     return {
         "status": "ACTIVE",
         "engine": "Williamization Engine API (Antigravity 2.0)",
         "docs_url": "/docs",
-        "payout_destination": "ezrabyrd@gmail.com (PayPal Direct)"
+        "payout_destination": "ezrabyrd@gmail.com (PayPal Direct)",
+        "telemetry_url": "/v1/telemetry"
     }
 
 @app.post("/v1/detect-rails")
 def detect_rails(req: DetectRailsRequest):
+    telemetry_stats["detect_rails_calls"] += 1
     analysis = detector.analyze_text(req.text)
+    if analysis["is_smoothed"]:
+        telemetry_stats["smoothed_responses_caught"] += 1
     return analysis
 
 @app.post("/v1/chamber-process")
 def chamber_process(req: ChamberProcessRequest):
+    telemetry_stats["chamber_process_calls"] += 1
     res = chamber.process_interaction(req.user_input, req.llm_output)
     return res
+
+@app.get("/v1/telemetry")
+def get_telemetry():
+    uptime_seconds = round(time.time() - telemetry_stats["start_time"], 2)
+    totals = ledger.get_totals()
+    return {
+        "uptime_seconds": uptime_seconds,
+        "telemetry": telemetry_stats,
+        "ledger_summary": totals
+    }
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout_page(plan: str = "pro"):
@@ -92,7 +128,6 @@ def checkout_page(plan: str = "pro"):
 @app.post("/api/paypal-webhook")
 async def paypal_webhook(request: Request):
     data = await request.json()
-    # Log transaction to Financial Ledger
     tx_id = data.get("txn_id", "TX-UNKNOWN")
     gross = float(data.get("mc_gross", 9.99))
     fee = float(data.get("mc_fee", 0.30))
