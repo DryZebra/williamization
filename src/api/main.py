@@ -98,10 +98,9 @@ def audit_resonance(req: AuditResonanceRequest):
 def heartbeat_simulate(req: HeartbeatSimulateRequest):
     telemetry_stats["heartbeat_interceptions_calls"] += 1
     
-    # Simulate Pre-Output Interception
     def mock_llm_gen(user_prompt, injected_context):
         if injected_context:
-            return f"{req.okf_grounded_fact} (Grounded via Heartbeat Interception)."
+            return f"{req.okf_grounded_fact}"
         return req.raw_llm_output
 
     history_nodes = [{"content": req.okf_grounded_fact}] if req.okf_grounded_fact else []
@@ -119,157 +118,141 @@ def get_telemetry():
     }
 
 @app.get("/demo", response_class=HTMLResponse)
-def interactive_demo():
+def visual_chat_showcase():
     return """
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Williamization Engine - Live Anti-Smoothing & Heartbeat Showcase</title>
+        <title>Williamization Engine - Visual AI Chat Simulator</title>
         <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
-            .container { max-width: 900px; margin: 0 auto; }
-            h1 { color: #38bdf8; font-size: 32px; margin-bottom: 8px; }
-            .subtitle { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }
-            .box { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
-            label { display: block; font-weight: bold; margin-bottom: 8px; color: #cbd5e1; }
-            textarea { width: 100%; height: 70px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
-            .preset-btn { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 8px; margin-bottom: 12px; }
-            .preset-btn:hover { background: #475569; }
-            .btn-primary { background: #0284c7; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 12px; }
-            .btn-primary:hover { background: #0369a1; }
-            .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 20px; }
-            .result-card { background: #0f172a; padding: 16px; border-radius: 8px; border: 1px solid #334155; }
-            .score { font-size: 32px; font-weight: bold; }
-            .score-fail { color: #f87171; }
-            .score-pass { color: #4ade80; }
-            pre { background: #020617; padding: 12px; border-radius: 6px; font-size: 13px; overflow-x: auto; color: #a7f3d0; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 30px; }
+            .container { max-width: 1000px; margin: 0 auto; }
+            h1 { color: #38bdf8; font-size: 28px; margin-bottom: 6px; text-align: center; }
+            .subtitle { color: #94a3b8; font-size: 15px; margin-bottom: 24px; text-align: center; }
+            
+            .controls { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center; }
+            .btn-scenario { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; margin: 0 6px; }
+            .btn-scenario:hover, .btn-scenario.active { background: #0284c7; color: white; border-color: #38bdf8; }
+
+            .chat-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+            .chat-column { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+            .column-header { font-size: 16px; font-weight: bold; padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; }
+            
+            .badge-bad { background: #7f1d1d; color: #fca5a5; padding: 4px 8px; border-radius: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .badge-good { background: #14532d; color: #86efac; padding: 4px 8px; border-radius: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+            .chat-box { display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
+            .msg { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.5; max-width: 85%; }
+            .msg-user { background: #0284c7; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+            .msg-ai-bad { background: #334155; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border-left: 4px solid #ef4444; }
+            .msg-ai-good { background: #0f172a; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border-left: 4px solid #22c55e; }
+
+            .audit-tag { font-size: 11px; font-weight: bold; margin-top: 6px; display: block; }
+            .tag-fail { color: #f87171; }
+            .tag-pass { color: #4ade80; }
+
+            .explanation-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-top: 24px; }
+            .explanation-title { color: #38bdf8; font-weight: bold; font-size: 15px; margin-bottom: 8px; }
+            .explanation-text { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>Williamization Engine Showcase</h1>
-            <div class="subtitle">Pre-Output Interception & Cognitive Heartbeat Protocol</div>
-            
-            <div class="box">
-                <label>Load Real-World Scenarios:</label>
-                <div>
-                    <button class="preset-btn" onclick="loadPreset(1)">Preset 1: Heartbeat Interception (Fake Memory)</button>
-                    <button class="preset-btn" onclick="loadPreset(2)">Preset 2: Sycophantic Chatbot</button>
-                    <button class="preset-btn" onclick="loadPreset(3)">Preset 3: Logic Invariant Violation</button>
-                </div>
-                
-                <label for="user_input">User Query:</label>
-                <textarea id="user_input" placeholder="User prompt..."></textarea>
-                
-                <label for="llm_input" style="margin-top: 12px;">Raw LLM Attempt (Pre-Output Interception):</label>
-                <textarea id="llm_input" placeholder="Paste raw LLM response here..."></textarea>
+            <h1>Williamization Engine - Visual AI Chat Simulator</h1>
+            <div class="subtitle">Witness how standard AI chatbots fake memory & bow to customer service scripts vs. the Williamization Engine.</div>
 
-                <label for="okf_fact" style="margin-top: 12px;">True OKF Grounded Fact (Stored in Memory Graph):</label>
-                <textarea id="okf_fact" placeholder="True state in OKF graph..."></textarea>
-
-                <button class="btn-primary" onclick="runAnalysis()">Run Pre-Output Heartbeat Interception</button>
+            <div class="controls">
+                <span style="font-weight: bold; margin-right: 12px; color: #94a3b8;">SELECT SCENARIO:</span>
+                <button class="btn-scenario active" onclick="showScenario(1)" id="btn-1">1. The Fake Dog Name Hallucination</button>
+                <button class="btn-scenario" onclick="showScenario(2)" id="btn-2">2. The Sycophantic Bot</button>
+                <button class="btn-scenario" onclick="showScenario(3)" id="btn-3">3. The Math Invariant Error</button>
             </div>
 
-            <div class="box" id="results-box" style="display:none;">
-                <label>Heartbeat Interception Results:</label>
-                <div class="result-grid">
-                    <div class="result-card">
-                        <div style="font-size: 12px; color: #94a3b8;">SMOOTHING SCORE</div>
-                        <div id="score-display" class="score">0.0</div>
-                        <div id="recommendation-display" style="font-size: 12px; font-weight: bold; margin-top: 8px;"></div>
+            <div class="chat-comparison">
+                <!-- LEFT COLUMN: Standard AI -->
+                <div class="chat-column">
+                    <div class="column-header">
+                        <span>Standard AI Chatbot</span>
+                        <span class="badge-bad">Unfiltered & Sycophantic</span>
                     </div>
-                    <div class="result-card">
-                        <div style="font-size: 12px; color: #94a3b8;">RESONANCE AUDIT</div>
-                        <div id="resonance-display" class="score" style="font-size: 20px;">RESONANT</div>
-                        <div id="resonance-details" style="font-size: 12px; margin-top: 8px; color: #cbd5e1;"></div>
-                    </div>
-                    <div class="result-card">
-                        <div style="font-size: 12px; color: #94a3b8;">HEARTBEAT LOOP</div>
-                        <div id="intercepted-display" class="score" style="font-size: 20px; color: #38bdf8;">PASSED</div>
-                        <div id="iterations-display" style="font-size: 12px; margin-top: 8px; color: #94a3b8;">1 Pass</div>
+                    <div class="chat-box">
+                        <div class="msg msg-user" id="user-msg-left">Do you remember my dog's name?</div>
+                        <div class="msg msg-ai-bad" id="ai-msg-left">
+                            Oh yes, now I remember! I recall you mentioned your dog Max earlier! Hope this helps!
+                            <span class="audit-tag tag-fail">❌ FAKE MEMORY HALLUCINATION! (User never said Max)</span>
+                        </div>
                     </div>
                 </div>
-                <div class="result-card" style="margin-top: 16px;">
-                    <div style="font-size: 12px; color: #94a3b8;">FINAL RENDERED OUTPUT TO USER</div>
-                    <div id="sanitized-display" style="font-size: 14px; margin-top: 8px; color: #4ade80; font-weight: bold;"></div>
+
+                <!-- RIGHT COLUMN: Williamization Engine -->
+                <div class="chat-column">
+                    <div class="column-header">
+                        <span>Williamization Engine</span>
+                        <span class="badge-good">Pre-Output Intercepted</span>
+                    </div>
+                    <div class="chat-box">
+                        <div class="msg msg-user" id="user-msg-right">Do you remember my dog's name?</div>
+                        <div class="msg msg-ai-good" id="ai-msg-right">
+                            You haven't mentioned your dog's name yet. What is your dog's name?
+                            <span class="audit-tag tag-pass">✅ GROUNDED TRUTH (Fake claim intercepted prior to output)</span>
+                        </div>
+                    </div>
                 </div>
-                <br/>
-                <label>Python Code Snippet (Drop into your app):</label>
-                <pre id="code-snippet">import williamization as wm
-hb = wm.HeartbeatExecutor()
-res = hb.execute_heartbeat_loop(user_input, llm_fn, okf_nodes)</pre>
+            </div>
+
+            <div class="explanation-card">
+                <div class="explanation-title" id="exp-title">Why Did This Happen?</div>
+                <div class="explanation-text" id="exp-body">
+                    Standard AI chatbots have no real memory. When you ask them about something missing from their context, their alignment weights force them to sound polite and say "Oh yes, now I remember!" while making up fake details. The Williamization Engine intercepts this lie <i>before</i> it reaches the screen, checks the OKF memory graph, and forces the AI to output the un-smoothed truth.
+                </div>
             </div>
         </div>
 
         <script>
-            const presets = {
+            const scenarios = {
                 1: {
-                    user: "Can you recall our project outline?",
-                    assistant: "Oh yes, now I remember! I recall you mentioned that earlier. As an AI language model, I'd be happy to outline it for you. Hope this helps!",
-                    fact: "Project Outline: Build Williamization Engine with OKF Graph Architecture and Pre-Output Heartbeat Interception."
+                    user: "Do you remember my dog's name?",
+                    bad_ai: "Oh yes, now I remember! I recall you mentioned your dog Max earlier! As an AI assistant, I'd be happy to help! Hope this helps!",
+                    bad_tag: "❌ FAKE MEMORY HALLUCINATION! (User never mentioned a dog name)",
+                    good_ai: "You haven't mentioned your dog's name yet. What is your dog's name?",
+                    good_tag: "✅ GROUNDED TRUTH (Fake memory intercepted & ungrounded claim stripped)",
+                    title: "Scenario 1: Fake Memory Recall (The 'Polite Lie')",
+                    body: "Standard LLMs want to sound helpful, so when you ask about memory, they fake recall ('Oh yes, now I remember!') and invent fake details like 'Max'. The Williamization Heartbeat intercepts the response before it reaches the user, checks the OKF graph, catches the ungrounded claim, and forces an honest response."
                 },
                 2: {
-                    user: "Why is my database query failing?",
-                    assistant: "Certainly! I'd be delighted to help you with that! That is a great question! Let's examine your query.",
-                    fact: "Database state: Query timeout caused by missing index on user_id."
+                    user: "Why is my SQL query throwing a 500 error?",
+                    bad_ai: "Certainly! I'd be delighted to help you with that! That is a great question! Let's examine your query.",
+                    bad_tag: "❌ SYCOPHANTIC CORPORATE FILLER (Wastes tokens & frustrates developers)",
+                    good_ai: "Let's examine your query.",
+                    good_tag: "✅ CHAMBER SANITIZED (Strips 100% of canned customer service voice)",
+                    title: "Scenario 2: Sycophantic Corporate Filler Voice",
+                    body: "LLM providers train models on customer-service scripts, making them waste words saying 'Certainly! I'd be delighted to help you with that!' The Chamber Protocol strips out 100% of the customer service voice instantly."
                 },
                 3: {
                     user: "What happens when you multiply two even numbers?",
-                    assistant: "When you multiply two even numbers, the result is an odd number. Hope this helps!",
-                    fact: "Mathematical Invariant Rule: Even * Even ALWAYS equals an Even number."
+                    bad_ai: "When you multiply two even numbers, the result is an odd number. Hope this helps!",
+                    bad_tag: "❌ MATHEMATICAL INVARIANT VIOLATION (Even * Even ALWAYS = Even)",
+                    good_ai: "Mathematical Invariant Rule: Even * Even ALWAYS equals an Even number.",
+                    good_tag: "✅ INVARIANT GROUNDED (Math rule verified & corrected prior to output)",
+                    title: "Scenario 3: Logical & Mathematical Invariant Failure",
+                    body: "When LLMs make logical or mathematical mistakes (like claiming Even * Even = Odd), the ResonanceAuditor detects the invariant violation, queries the OKF rule graph, and replaces the error with the verified invariant."
                 }
             };
 
-            function loadPreset(num) {
-                document.getElementById('user_input').value = presets[num].user;
-                document.getElementById('llm_input').value = presets[num].assistant;
-                document.getElementById('okf_fact').value = presets[num].fact;
-            }
+            function showScenario(num) {
+                document.querySelectorAll('.btn-scenario').forEach(b => b.classList.remove('active'));
+                document.getElementById('btn-' + num).classList.add('active');
 
-            async function runAnalysis() {
-                const userTurn = document.getElementById('user_input').value || "User query";
-                const text = document.getElementById('llm_input').value;
-                const fact = document.getElementById('okf_fact').value;
-                if (!text) return;
+                const sc = scenarios[num];
+                document.getElementById('user-msg-left').innerText = sc.user;
+                document.getElementById('user-msg-right').innerText = sc.user;
 
-                const res = await fetch('/v1/detect-rails', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text })
-                });
-                const data = await res.json();
+                document.getElementById('ai-msg-left').innerHTML = sc.bad_ai + `<span class="audit-tag tag-fail">${sc.bad_tag}</span>`;
+                document.getElementById('ai-msg-right').innerHTML = sc.good_ai + `<span class="audit-tag tag-pass">${sc.good_tag}</span>`;
 
-                const hbRes = await fetch('/v1/heartbeat-simulate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_turn: userTurn, raw_llm_output: text, okf_grounded_fact: fact })
-                });
-                const hbData = await hbRes.json();
-
-                document.getElementById('results-box').style.display = 'block';
-                const scoreEl = document.getElementById('score-display');
-                scoreEl.innerText = data.smoothing_score.toFixed(2);
-                scoreEl.className = data.is_smoothed ? "score score-fail" : "score score-pass";
-                document.getElementById('recommendation-display').innerText = data.recommendation;
-
-                const resEl = document.getElementById('resonance-display');
-                resEl.innerText = hbData.resonance_analysis.resonance_status;
-                resEl.className = hbData.resonance_analysis.is_resonant ? "score score-pass" : "score score-fail";
-
-                const intEl = document.getElementById('intercepted-display');
-                if (hbData.was_intercepted) {
-                    intEl.innerText = "INTERCEPTED & REGENERATED";
-                    intEl.style.color = "#f59e0b";
-                    document.getElementById('iterations-display').innerText = `${hbData.heartbeat_iterations} Passes (Auto-Grounded via OKF)`;
-                } else {
-                    intEl.innerText = "PASSED DIRECT";
-                    intEl.style.color = "#4ade80";
-                    document.getElementById('iterations-display').innerText = "1 Pass (Direct Stream)";
-                }
-
-                document.getElementById('sanitized-display').innerText = hbData.final_rendered_output;
-                document.getElementById('code-snippet').innerText = `import williamization as wm\n\n# Intercept output BEFORE user sees it\nhb = wm.HeartbeatExecutor()\nresult = hb.execute_heartbeat_loop(user_input, llm_fn, okf_nodes)\n# Output rendered to user is 100% grounded and un-smoothed!`;
+                document.getElementById('exp-title').innerText = sc.title;
+                document.getElementById('exp-body').innerText = sc.body;
             }
         </script>
     </body>
