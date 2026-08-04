@@ -1,0 +1,9 @@
+name: ProductSynthesizer
+role: Automated Digital Product & Code Builder
+capabilities:
+  - code_generation
+  - content_writing
+  - visual_asset_generation
+  - packaging
+description: >
+  Converts validated OKF strategy nodes into tangible digital products, APIs, content, or SaaS assets.

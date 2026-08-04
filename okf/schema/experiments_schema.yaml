@@ -1,0 +1,16 @@
+# OKF Experiment Tracking Schema
+
+ExperimentEntry:
+  required_fields:
+    - id
+    - type
+    - title
+    - hypothesis
+    - vector_category
+    - capital_cost_usd
+    - status
+    - created_at
+  optional_fields:
+    - total_revenue_generated_usd
+    - key_learnings
+    - next_action

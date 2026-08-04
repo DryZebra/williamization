@@ -1,0 +1,17 @@
+# OKF Core Ontology Schema Specification
+
+entity_types:
+  - MarketOpportunity
+  - DigitalProduct
+  - MonetizationStrategy
+  - YieldTelemetry
+  - RiskAssessment
+
+relationship_types:
+  - DEPENDS_ON
+  - TARGETS_MARKET
+  - EXECUTES_STRATEGY
+  - GENERATES_REVENUE
+  - COMPETES_WITH
+  - RESOLVES_GAP
+  - SUPERSEDES

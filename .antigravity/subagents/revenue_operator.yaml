@@ -1,0 +1,8 @@
+name: RevenueOperator
+role: Deployment & Monetization Execution Operator
+capabilities:
+  - api_deployment
+  - payment_gateway_integration
+  - yield_analytics
+description: >
+  Deploys assets, manages payment endpoints, monitors conversion telemetry, and feeds performance data back into SEKG.

@@ -1,0 +1,22 @@
+# Security & Credentials
+.env
+*.env
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+okf_test_tmp/
+
+# Node
+node_modules/
+npm-debug.log
+.vercel/
+
+# Antigravity Brain / Temp
+.gemini/
+scratch/

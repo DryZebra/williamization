@@ -1,0 +1,16 @@
+# OKF Financial Ledger Schema
+
+LedgerEntry:
+  required_fields:
+    - id
+    - type
+    - transaction_date
+    - source_experiment_id
+    - gross_revenue_usd
+    - platform_fee_usd
+    - net_revenue_usd
+    - payout_status
+    - destination_account
+  optional_fields:
+    - customer_reference
+    - notes

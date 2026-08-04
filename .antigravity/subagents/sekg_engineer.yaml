@@ -1,0 +1,10 @@
+name: SEKGEngineer
+role: Knowledge Graph Curator & Epistemic Gap Resolver
+capabilities:
+  - okf_parsing
+  - schema_validation
+  - llm_arbitration
+  - graph_traversal
+description: >
+  Maintains SEKG integrity, resolves contradictions between old knowledge and new observations,
+  and identifies missing graph connections.

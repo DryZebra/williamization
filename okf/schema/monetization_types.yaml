@@ -1,0 +1,31 @@
+# Monetization Specific Schemas
+
+MarketOpportunity:
+  required_fields:
+    - id
+    - type
+    - title
+    - confidence_score
+    - estimated_tam_usd
+  optional_fields:
+    - tags
+    - relations
+
+DigitalProduct:
+  required_fields:
+    - id
+    - type
+    - title
+    - product_category
+    - deployment_status
+  optional_fields:
+    - price_model
+    - repository_url
+
+MonetizationStrategy:
+  required_fields:
+    - id
+    - type
+    - title
+    - expected_roi
+    - risk_level

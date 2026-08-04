@@ -1,0 +1,25 @@
+# Global Monetizer Engine Configuration
+
+system:
+  name: "Antigravity-Monetizer-Engine"
+  version: "2.0.0"
+  environment: "development"
+
+sekg:
+  storage_path: "okf/graph"
+  schema_path: "okf/schema"
+  index_path: "okf/index"
+  auto_evolution: true
+  confidence_threshold: 0.70
+
+antigravity:
+  max_concurrent_subagents: 4
+  scheduled_execution_interval_seconds: 3600
+  human_in_the_loop_approval: false
+
+monetization:
+  max_initial_asset_budget_usd: 100.00
+  target_channels:
+    - "digital_publishing"
+    - "micro_saas_apis"
+    - "niche_content_platforms"
