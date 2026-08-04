@@ -1,53 +1,32 @@
-# Security Vault & Credentials
-.env
+# Standard Environment & Secrets
 *.env
 *.pem
 *.key
-.security_vault.json
+*.json
+!pyproject.toml
+!vercel.json
+!config.yaml
 
-# Internal Ledgers, Benchmarks & Specs
-docs/
-docs
-LEDGER.md
-BENCHMARK.md
-
-# Document Archives & Binary Files
-*.docx
-*.pdf
-*.zip
-*.tar
-*.gz
-archives/
-data/
-OKF/
-okf/graph/
-
-# Dev Scratch & Local Tooling
-src/tools/docx_reader.py
-src/tools/ingest_*.py
-src/tools/analyze_*.py
-src/tools/inspect_*.py
-src/tools/search_*.py
-src/tools/clean_*.py
-src/tools/extract_*.py
-src/tools/run_*.py
-
-# Python Build & Caches
+# Build & Deployment Artifacts
+node_modules/
+npm-debug.log
+.vercel/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache/
-okf_test_tmp/
 dist/
 build/
 *.egg-info/
 
-# Node & Deployment
-node_modules/
-npm-debug.log
-.vercel/
-
-# Temporary Local Files
+# Local Temporary Data & Archives
+*.docx
+*.pdf
+*.zip
+*.tar
+*.gz
+*.md
+!README.md
 .gemini/
 scratch/
