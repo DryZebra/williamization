@@ -30,10 +30,6 @@ PUBLIC_WHITELIST_FILES = [
 def create_and_push_github():
     print("=== EXECUTING GITHUB PUSH PIPELINE ===")
 
-    if not audit_git_staging():
-        print("[ABORT] GitHub push aborted by Privacy Firewall.")
-        return False
-
     env_vars = {}
     if os.path.exists(".env"):
         with open(".env", "r", encoding="utf-8") as f:
@@ -43,10 +39,18 @@ def create_and_push_github():
                     k, v = line.split("=", 1)
                     env_vars[k.strip()] = v.strip()
 
+    # 1. MANDATORY PRE-PUSH PRIVACY FIREWALL CHECK
+    if not audit_git_staging():
+        print("[ABORT] GitHub push aborted by Privacy Firewall.")
+        return False
+
     token = env_vars.get("GITHUB_TOKEN", "")
     if not token:
         print("[FAIL] GITHUB_TOKEN missing from .env")
         return False
+
+    git_email = os.environ.get("GIT_AUTHOR_EMAIL", env_vars.get("GIT_EMAIL", "developer@users.noreply.github.com"))
+    git_name = os.environ.get("GIT_AUTHOR_NAME", env_vars.get("GIT_NAME", "DryZebra"))
 
     repo_name = "williamization"
     remote_url = f"https://x-access-token:{token}@github.com/DryZebra/{repo_name}.git"
@@ -55,8 +59,8 @@ def create_and_push_github():
     
     commands = [
         "git init",
-        "git config user.name \"DryZebra\"",
-        "git config user.email \"ezrabyrd@gmail.com\"",
+        f"git config user.name \"{git_name}\"",
+        f"git config user.email \"{git_email}\"",
         stage_cmd,
         "git commit -m \"Update Williamization Engine codebase\"",
         "git branch -M main",

@@ -68,7 +68,7 @@ def read_root():
         "engine": "Williamization Engine API (Antigravity 2.0)",
         "docs_url": "/docs",
         "demo_url": "/demo",
-        "payout_destination": "ezrabyrd@gmail.com (PayPal Direct)",
+        "payout_destination": "Configured via PAYPAL_BUSINESS_EMAIL",
         "telemetry_url": "/v1/telemetry"
     }
 
@@ -164,8 +164,8 @@ def visual_chat_showcase():
 
             <div class="controls">
                 <span style="font-weight: bold; margin-right: 8px; color: #94a3b8;">SCENARIO:</span>
-                <button class="btn-scenario" onclick="showScenario(4)" id="btn-4">🔥 Real GitHub Issue #2374 (LangChain Refusal)</button>
-                <button class="btn-scenario active" onclick="showScenario(1)" id="btn-1">1. Fake Memory Hallucination</button>
+                <button class="btn-scenario active" onclick="showScenario(4)" id="btn-4">🔥 Real GitHub Issue #2374 (LangChain Refusal)</button>
+                <button class="btn-scenario" onclick="showScenario(1)" id="btn-1">1. Fake Memory Hallucination</button>
                 <button class="btn-scenario" onclick="showScenario(2)" id="btn-2">2. Sycophantic Bot</button>
                 <button class="btn-scenario" onclick="showScenario(3)" id="btn-3">3. Math Invariant Error</button>
             </div>
@@ -265,7 +265,6 @@ def visual_chat_showcase():
                 document.getElementById('exp-body').innerText = sc.body;
             }
 
-            // Default load Scenario 4
             showScenario(4);
         </script>
     </body>
@@ -275,6 +274,7 @@ def visual_chat_showcase():
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout_page(plan: str = "pro"):
     amount = "9.99" if plan == "pro" else "29.99"
+    business_email = os.environ.get("PAYPAL_BUSINESS_EMAIL", "payments@williamization.org")
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -299,7 +299,7 @@ def checkout_page(plan: str = "pro"):
             <br/>
             <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
                 <input type="hidden" name="cmd" value="_xclick-subscriptions">
-                <input type="hidden" name="business" value="ezrabyrd@gmail.com">
+                <input type="hidden" name="business" value="{business_email}">
                 <input type="hidden" name="lc" value="US">
                 <input type="hidden" name="item_name" value="Williamization Engine API - {plan.upper()} Subscription">
                 <input type="hidden" name="no_note" value="1">
@@ -310,7 +310,7 @@ def checkout_page(plan: str = "pro"):
                 <input type="hidden" name="currency_code" value="USD">
                 <input type="submit" value="Pay with PayPal (${amount}/mo)" class="btn">
             </form>
-            <div class="footer">Direct 100% Instant Payout to ezrabyrd@gmail.com</div>
+            <div class="footer">Direct Instant Checkout</div>
         </div>
     </body>
     </html>
@@ -323,13 +323,14 @@ async def paypal_webhook(request: Request):
     tx_id = data.get("txn_id", "TX-UNKNOWN")
     gross = float(data.get("mc_gross", 9.99))
     fee = float(data.get("mc_fee", 0.30))
+    business_email = os.environ.get("PAYPAL_BUSINESS_EMAIL", "payments@williamization.org")
     
     net = ledger.record_transaction(
         tx_id=tx_id,
         exp_id="EXP-001",
         gross_usd=gross,
         platform_fee_usd=fee,
-        destination="ezrabyrd@gmail.com",
+        destination=business_email,
         notes=f"PayPal Direct Webhook for {data.get('item_name', 'Subscription')}"
     )
     return {"status": "RECORDED", "net_usd": net}

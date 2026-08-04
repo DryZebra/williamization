@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import json
+import re
 
 GENERIC_FORBIDDEN_EXTENSIONS = [
     ".env", ".pem", ".key", ".pkcs12", ".pfx", ".docx", ".doc", ".pdf", ".zip", ".tar", ".gz"
@@ -11,10 +12,13 @@ GENERIC_FORBIDDEN_KEYWORDS = [
     "secret", "private_key", "password", "token_vault", "credentials"
 ]
 
+# Strict PII Email Regex (Flags any raw personal emails in source files)
+EMAIL_REGEX = r"[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|icloud)\.com"
+
 def audit_git_staging() -> bool:
     """
     Enterprise-Grade Security Firewall.
-    Scans every file tracked in Git against security rules and local .security_vault.json patterns.
+    Scans every file tracked in Git against security rules, PII leaks, and local .security_vault.json patterns.
     """
     res = subprocess.run("git ls-files", shell=True, capture_output=True, text=True, errors="ignore")
     tracked_files = [f.strip() for f in res.stdout.splitlines() if f.strip()]
@@ -53,11 +57,19 @@ def audit_git_staging() -> bool:
                 violations.append(f"{f} (Vault path policy match)")
                 break
 
-        # 2. Text Content Leak Check (Scan EVERY tracked file)
+        # 2. Text Content & PII Leak Check (Scan EVERY tracked file)
         if f_norm.endswith((".md", ".py", ".toml", ".json", ".yaml", ".txt")) and "privacy_firewall.py" not in f_norm:
             try:
                 with open(f, "r", encoding="utf-8", errors="ignore") as file_obj:
-                    content_lower = file_obj.read().lower()
+                    content = file_obj.read()
+                    content_lower = content.lower()
+                    
+                    # PII Email Check
+                    email_matches = re.findall(EMAIL_REGEX, content_lower)
+                    if email_matches:
+                        text_leaks.append(f"{f} (Personal Email PII Leak detected)")
+
+                    # Vault Text Policy Check
                     for vt in vault_texts:
                         if vt.lower() in content_lower:
                             text_leaks.append(f"{f} (Vault text match: '{vt}')")
