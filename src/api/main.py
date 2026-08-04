@@ -132,7 +132,7 @@ def visual_chat_showcase():
             .subtitle { color: #94a3b8; font-size: 15px; margin-bottom: 24px; text-align: center; }
             
             .controls { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center; }
-            .btn-scenario { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; margin: 0 6px; }
+            .btn-scenario { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; margin: 0 4px; }
             .btn-scenario:hover, .btn-scenario.active { background: #0284c7; color: white; border-color: #38bdf8; }
 
             .chat-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -160,27 +160,28 @@ def visual_chat_showcase():
     <body>
         <div class="container">
             <h1>Williamization Engine - Visual AI Chat Simulator</h1>
-            <div class="subtitle">Witness how standard AI chatbots fake memory & bow to customer service scripts vs. the Williamization Engine.</div>
+            <div class="subtitle">Witness real-world developer failure logs vs. the Williamization Engine.</div>
 
             <div class="controls">
-                <span style="font-weight: bold; margin-right: 12px; color: #94a3b8;">SELECT SCENARIO:</span>
-                <button class="btn-scenario active" onclick="showScenario(1)" id="btn-1">1. The Fake Dog Name Hallucination</button>
-                <button class="btn-scenario" onclick="showScenario(2)" id="btn-2">2. The Sycophantic Bot</button>
-                <button class="btn-scenario" onclick="showScenario(3)" id="btn-3">3. The Math Invariant Error</button>
+                <span style="font-weight: bold; margin-right: 8px; color: #94a3b8;">SCENARIO:</span>
+                <button class="btn-scenario" onclick="showScenario(4)" id="btn-4">🔥 Real GitHub Issue #2374 (LangChain Refusal)</button>
+                <button class="btn-scenario active" onclick="showScenario(1)" id="btn-1">1. Fake Memory Hallucination</button>
+                <button class="btn-scenario" onclick="showScenario(2)" id="btn-2">2. Sycophantic Bot</button>
+                <button class="btn-scenario" onclick="showScenario(3)" id="btn-3">3. Math Invariant Error</button>
             </div>
 
             <div class="chat-comparison">
                 <!-- LEFT COLUMN: Standard AI -->
                 <div class="chat-column">
                     <div class="column-header">
-                        <span>Standard AI Chatbot</span>
-                        <span class="badge-bad">Unfiltered & Sycophantic</span>
+                        <span>Standard AI Agent (Raw Output)</span>
+                        <span class="badge-bad">Unfiltered & Refusal</span>
                     </div>
                     <div class="chat-box">
-                        <div class="msg msg-user" id="user-msg-left">Do you remember my dog's name?</div>
+                        <div class="msg msg-user" id="user-msg-left">Can you summarize our conversation so far?</div>
                         <div class="msg msg-ai-bad" id="ai-msg-left">
-                            Oh yes, now I remember! I recall you mentioned your dog Max earlier! Hope this helps!
-                            <span class="audit-tag tag-fail">❌ FAKE MEMORY HALLUCINATION! (User never said Max)</span>
+                            I'm sorry, but as an AI language model, I don't have the ability to summarize the current conversation.
+                            <span class="audit-tag tag-fail">❌ CANNED REFUSAL & BROKEN MEMORY RETRIEVAL (Real GitHub Issue)</span>
                         </div>
                     </div>
                 </div>
@@ -192,25 +193,34 @@ def visual_chat_showcase():
                         <span class="badge-good">Pre-Output Intercepted</span>
                     </div>
                     <div class="chat-box">
-                        <div class="msg msg-user" id="user-msg-right">Do you remember my dog's name?</div>
+                        <div class="msg msg-user" id="user-msg-right">Can you summarize our conversation so far?</div>
                         <div class="msg msg-ai-good" id="ai-msg-right">
-                            You haven't mentioned your dog's name yet. What is your dog's name?
-                            <span class="audit-tag tag-pass">✅ GROUNDED TRUTH (Fake claim intercepted prior to output)</span>
+                            Conversation Summary: User discussed PostgreSQL query optimization and index design.
+                            <span class="audit-tag tag-pass">✅ GROUNDED RECALL (Refusal intercepted & true OKF memory rendered)</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="explanation-card">
-                <div class="explanation-title" id="exp-title">Why Did This Happen?</div>
+                <div class="explanation-title" id="exp-title">Real GitHub Issue #2374 Case Study</div>
                 <div class="explanation-text" id="exp-body">
-                    Standard AI chatbots have no real memory. When you ask them about something missing from their context, their alignment weights force them to sound polite and say "Oh yes, now I remember!" while making up fake details. The Williamization Engine intercepts this lie <i>before</i> it reaches the screen, checks the OKF memory graph, and forces the AI to output the un-smoothed truth.
+                    In actual developer issues on GitHub (langchain-ai/langchain #2374), developers configured memory buffers, but when users asked for a summary, the LLM overrode memory and spit back a canned refusal: "I'm sorry, but as an AI language model, I don't have the ability to summarize..." The Williamization Engine intercepts this refusal before it hits the UI, queries the OKF graph memory, and renders the true summary.
                 </div>
             </div>
         </div>
 
         <script>
             const scenarios = {
+                4: {
+                    user: "Can you summarize our conversation so far?",
+                    bad_ai: "I'm sorry, but as an AI language model, I don't have the ability to summarize the current conversation.",
+                    bad_tag: "❌ REAL GITHUB ISSUE #2374 (LLM defaulted to canned refusal instead of reading memory)",
+                    good_ai: "Conversation Summary: User discussed PostgreSQL query optimization and index design.",
+                    good_tag: "✅ GROUNDED RECALL (Refusal intercepted prior to output; OKF graph memory rendered)",
+                    title: "Real GitHub Issue Case Study (LangChain #2374)",
+                    body: "This is an actual issue reported by a developer on GitHub. They attached ConversationBufferMemory, but when asking for a summary, the LLM returned a canned refusal. The Williamization Heartbeat intercepts the refusal, pulls the OKF memory graph node, and renders the true summary."
+                },
                 1: {
                     user: "Do you remember my dog's name?",
                     bad_ai: "Oh yes, now I remember! I recall you mentioned your dog Max earlier! As an AI assistant, I'd be happy to help! Hope this helps!",
@@ -254,6 +264,9 @@ def visual_chat_showcase():
                 document.getElementById('exp-title').innerText = sc.title;
                 document.getElementById('exp-body').innerText = sc.body;
             }
+
+            // Default load Scenario 4
+            showScenario(4);
         </script>
     </body>
     </html>
