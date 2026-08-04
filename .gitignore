@@ -30,3 +30,4 @@ build/
 !README.md
 .gemini/
 scratch/
+.antigravity/

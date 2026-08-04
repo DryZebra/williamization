@@ -1,9 +1,0 @@
-name: MarketMiner
-role: Competitive Intelligence & Opportunity Discovery Agent
-capabilities:
-  - web_search
-  - api_scraping
-  - trend_analysis
-description: >
-  Scans markets, digital channels, and consumer trends to discover high-yield monetization opportunities
-  and draft initial OKF MarketOpportunity nodes.
