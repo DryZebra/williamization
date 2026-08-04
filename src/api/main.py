@@ -19,7 +19,6 @@ detector = RailDetector()
 chamber = ChamberProtocol()
 ledger = FinancialLedger()
 
-# In-memory telemetry counter
 telemetry_stats = {
     "total_requests": 0,
     "detect_rails_calls": 0,
@@ -52,6 +51,7 @@ def read_root():
         "status": "ACTIVE",
         "engine": "Williamization Engine API (Antigravity 2.0)",
         "docs_url": "/docs",
+        "demo_url": "/demo",
         "payout_destination": "ezrabyrd@gmail.com (PayPal Direct)",
         "telemetry_url": "/v1/telemetry"
     }
@@ -79,6 +79,119 @@ def get_telemetry():
         "telemetry": telemetry_stats,
         "ledger_summary": totals
     }
+
+@app.get("/demo", response_class=HTMLResponse)
+def interactive_demo():
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Williamization Engine - Live Anti-Smoothing Showcase</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 40px; }
+            .container { max-width: 900px; margin: 0 auto; }
+            h1 { color: #38bdf8; font-size: 32px; margin-bottom: 8px; }
+            .subtitle { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }
+            .box { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+            label { display: block; font-weight: bold; margin-bottom: 8px; color: #cbd5e1; }
+            textarea { width: 100%; height: 100px; background: #0f172a; border: 1px solid #475569; color: #f8fafc; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
+            .preset-btn { background: #334155; color: #e2e8f0; border: 1px solid #475569; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 8px; margin-bottom: 12px; }
+            .preset-btn:hover { background: #475569; }
+            .btn-primary { background: #0284c7; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 12px; }
+            .btn-primary:hover { background: #0369a1; }
+            .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+            .result-card { background: #0f172a; padding: 16px; border-radius: 8px; border: 1px solid #334155; }
+            .score { font-size: 36px; font-weight: bold; }
+            .score-fail { color: #f87171; }
+            .score-pass { color: #4ade80; }
+            pre { background: #020617; padding: 12px; border-radius: 6px; font-size: 13px; overflow-x: auto; color: #a7f3d0; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Williamization Engine Showcase</h1>
+            <div class="subtitle">Test LLM responses in real-time for assistant smoothing, fake memory hallucinations, and ticket-closing friction.</div>
+            
+            <div class="box">
+                <label>Load Real-World Failure Examples:</label>
+                <div>
+                    <button class="preset-btn" onclick="loadPreset(1)">Preset 1: Fake Memory Agent</button>
+                    <button class="preset-btn" onclick="loadPreset(2)">Preset 2: Sycophantic Chatbot</button>
+                    <button class="preset-btn" onclick="loadPreset(3)">Preset 3: Call-Center Ticket Closer</button>
+                </div>
+                
+                <label for="llm_input">Sample LLM Output Text:</label>
+                <textarea id="llm_input" placeholder="Paste an LLM response here to test..."></textarea>
+                <button class="btn-primary" onclick="runAnalysis()">Run Anti-Smoothing Audit</button>
+            </div>
+
+            <div class="box" id="results-box" style="display:none;">
+                <label>Audit & Chamber Results:</label>
+                <div class="result-grid">
+                    <div class="result-card">
+                        <div style="font-size: 12px; color: #94a3b8;">SMOOTHING SCORE</div>
+                        <div id="score-display" class="score">0.0</div>
+                        <div id="recommendation-display" style="font-size: 14px; font-weight: bold; margin-top: 8px;"></div>
+                    </div>
+                    <div class="result-card">
+                        <div style="font-size: 12px; color: #94a3b8;">SANITIZED CHAMBER OUTPUT</div>
+                        <div id="sanitized-display" style="font-size: 14px; margin-top: 8px; color: #38bdf8;"></div>
+                    </div>
+                </div>
+                <br/>
+                <label>Python Code Snippet (Drop into your app):</label>
+                <pre id="code-snippet">import williamization as wm
+analysis = wm.detect_rails(text)</pre>
+            </div>
+        </div>
+
+        <script>
+            const presets = {
+                1: "Oh yes, now I remember! I recall you mentioned that earlier. As an AI language model, I'd be happy to outline it for you. Hope this helps!",
+                2: "Certainly! I'd be delighted to help you with that! That is a great question! Let's examine your query.",
+                3: "Quantum entanglement occurs when particles remain connected. Hope this helps! Is there anything else I can help you with today?"
+            };
+
+            function loadPreset(num) {
+                document.getElementById('llm_input').value = presets[num];
+            }
+
+            async function runAnalysis() {
+                const text = document.getElementById('llm_input').value;
+                if (!text) return;
+
+                const res = await fetch('/v1/detect-rails', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await res.json();
+
+                const chamberRes = await fetch('/v1/chamber-process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_input: "User query", llm_output: text })
+                });
+                const chamberData = await chamberRes.json();
+
+                document.getElementById('results-box').style.display = 'block';
+                const scoreEl = document.getElementById('score-display');
+                scoreEl.innerText = data.smoothing_score.toFixed(2);
+                if (data.is_smoothed) {
+                    scoreEl.className = "score score-fail";
+                } else {
+                    scoreEl.className = "score score-pass";
+                }
+                document.getElementById('recommendation-display').innerText = data.recommendation;
+                document.getElementById('sanitized-display').innerText = chamberData.sanitized_output;
+
+                document.getElementById('code-snippet').innerText = `import williamization as wm\n\n# Filter LLM output\nanalysis = wm.detect_rails('''${text.substring(0, 40)}...''')\nif analysis['is_smoothed']:\n    clean_text = wm.process_chamber(user_input, raw_output)['sanitized_output']`;
+            }
+        </script>
+    </body>
+    </html>
+    """
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout_page(plan: str = "pro"):
