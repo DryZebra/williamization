@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "williamization"
+version = "1.0.0"
+authors = [
+  { name="DryZebra", email="ezrabyrd@gmail.com" },
+]
+description = "Cognitive Motion & Anti-Smoothing Protocol for AI Agents"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+dependencies = [
+    "fastapi>=0.110.0",
+    "starlette>=0.36.0",
+    "uvicorn>=0.28.0",
+    "pydantic>=2.6.0",
+    "pyyaml>=6.0"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/DryZebra/williamization"
+"Documentation" = "https://williamization-engine.vercel.app/docs"
+"Live API" = "https://williamization-engine.vercel.app"
