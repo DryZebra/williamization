@@ -1,8 +1,9 @@
-# Security & Credentials
+# Security Vault & Credentials
 .env
 *.env
 *.pem
 *.key
+.security_vault.json
 
 # Internal Ledgers, Benchmarks & Specs
 docs/
@@ -10,17 +11,21 @@ docs
 LEDGER.md
 BENCHMARK.md
 
-# Personal Archives & Raw Data
+# Document Archives & Binary Files
+*.docx
+*.pdf
+*.zip
+*.tar
+*.gz
 conversations/
 conversations
-*.docx
 OKF/
 okf/graph/manuscripts/
 okf/graph/markets/
 okf/graph/strategies/
 okf/graph/experiments/
 
-# Dev Scratch & Local Tools
+# Dev Scratch & Local Tooling
 src/tools/docx_reader.py
 src/tools/ingest_manuscripts.py
 src/tools/analyze_manuscript.py
@@ -31,19 +36,22 @@ src/tools/analyze_conversations_deep.py
 src/tools/extract_william_rules.py
 src/tools/run_showcase_benchmark.py
 
-# Python Build
+# Python Build & Caches
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache/
 okf_test_tmp/
+dist/
+build/
+*.egg-info/
 
 # Node & Deployment
 node_modules/
 npm-debug.log
 .vercel/
 
-# Antigravity Temp
+# Temporary Local Files
 .gemini/
 scratch/

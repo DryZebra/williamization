@@ -1,77 +1,92 @@
 import os
 import subprocess
 import sys
+import json
 
-# FORBIDDEN PATH PATTERNS & EXTENSIONS
-FORBIDDEN_PATTERNS = [
-    "conversations",
-    ".docx",
-    ".env",
-    "Materialist Christianity EBook",
-    "Materialist_Christianity_Volume_II",
-    "scratch",
-    "OKF/conversations"
+# GENERIC ABSTRACT EXCLUSION EXTENSIONS & PATTERNS (100% Standard Open-Source)
+GENERIC_FORBIDDEN_EXTENSIONS = [
+    ".env", ".pem", ".key", ".pkcs12", ".pfx", ".docx", ".doc", ".pdf", ".zip", ".tar", ".gz"
 ]
 
-# FORBIDDEN META-CHAT CONTEXT LEAK STRINGS IN PUBLIC FILES
-FORBIDDEN_TEXT_LEAKS = [
-    "private conversation logs",
-    "personal identity details",
-    "chat history",
-    "my boss",
-    "defensive privacy",
-    "internal chat",
-    "leaked"
+GENERIC_FORBIDDEN_KEYWORDS = [
+    "secret", "private_key", "password", "token_vault", "credentials"
 ]
 
 def audit_git_staging() -> bool:
     """
-    Inspects all files tracked or staged in git for path violations and text context leaks.
+    Enterprise-Grade Security Firewall.
+    Inspects tracked and staged files for generic security risks, secret leaks,
+    and reads local untracked rules from .security_vault.json if present.
     """
     res = subprocess.run("git ls-files", shell=True, capture_output=True, text=True, errors="ignore")
     tracked_files = [f.strip() for f in res.stdout.splitlines() if f.strip()]
+
+    # Load local vault rules if present locally (never committed)
+    vault_paths = []
+    vault_texts = []
+    vault_file = ".security_vault.json"
+    if os.path.exists(vault_file):
+        try:
+            with open(vault_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                vault_paths = data.get("forbidden_path_patterns", [])
+                vault_texts = data.get("forbidden_text_patterns", [])
+        except Exception:
+            pass
 
     violations = []
     text_leaks = []
 
     for f in tracked_files:
         f_norm = f.replace("\\", "/")
-        # 1. Path Audit
-        for pattern in FORBIDDEN_PATTERNS:
-            if pattern.lower() in f_norm.lower():
-                violations.append(f)
+        
+        # 1. Extension & Path Violation Check
+        for ext in GENERIC_FORBIDDEN_EXTENSIONS:
+            if f_norm.lower().endswith(ext):
+                violations.append(f"{f} (Forbidden extension: {ext})")
                 break
 
-        # 2. Text Context Leak Audit (Skip firewall script itself from text-search)
+        for kw in GENERIC_FORBIDDEN_KEYWORDS:
+            if kw in f_norm.lower() and "privacy_firewall.py" not in f_norm:
+                violations.append(f"{f} (Forbidden keyword: {kw})")
+                break
+
+        # Vault Local Path Check
+        for vp in vault_paths:
+            if vp.lower() in f_norm.lower():
+                violations.append(f"{f} (Vault policy match)")
+                break
+
+        # 2. Text Content Leak Check (Skip firewall script itself)
         if f_norm.endswith((".md", ".py", ".toml", ".json", ".yaml", ".txt")) and "privacy_firewall.py" not in f_norm:
             try:
                 with open(f, "r", encoding="utf-8", errors="ignore") as file_obj:
                     content_lower = file_obj.read().lower()
-                    for leak in FORBIDDEN_TEXT_LEAKS:
-                        if leak in content_lower:
-                            text_leaks.append(f"{f} (contains: '{leak}')")
+                    for vt in vault_texts:
+                        if vt.lower() in content_lower:
+                            text_leaks.append(f"{f} (Vault text match)")
             except Exception:
                 pass
 
     if violations or text_leaks:
         print("\n==================================================")
-        print("[CRITICAL SECURITY BLOCK] PRE-PUSH PRIVACY & CONTEXT FIREWALL TRIGGERED!")
+        print("[CRITICAL SECURITY BLOCK] ENTERPRISE PRIVACY FIREWALL TRIGGERED!")
         if violations:
-            print("Forbidden/Personal File Paths Detected:")
+            print("Forbidden Path/Extension Violations Detected:")
             for v in violations:
                 print(f"  - {v}")
         if text_leaks:
-            print("Internal Meta-Chat Context Leaks Detected in Text:")
+            print("Content Policy Violations Detected in Text:")
             for tl in text_leaks:
                 print(f"  - {tl}")
-        print("PUSH ABORTED. Sanitize files before attempting to push.")
+        print("PUSH ABORTED. Sanitize repository before attempting to push.")
         print("==================================================\n")
         return False
 
-    print("[PASS] Privacy & Context Firewall Audit Passed: 0 context leaks detected.")
+    print("[PASS] Enterprise Security Audit Passed: 0 security policy violations detected.")
     return True
 
 if __name__ == "__main__":
     if not audit_git_staging():
         sys.exit(1)
-    print("Pre-push privacy audit complete.")
+    print("Pre-push security audit complete.")
