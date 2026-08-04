@@ -6,6 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "williamization"
 version = "1.0.0"
 description = "Cognitive Motion & Anti-Smoothing Protocol for AI Agents"
+requires-python = ">=3.9"
 readme = "README.md"
 authors = [
     { name = "DryZebra", email = "developer@users.noreply.github.com" }

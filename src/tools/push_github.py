@@ -9,6 +9,7 @@ from src.tools.privacy_firewall import audit_git_staging
 
 PUBLIC_WHITELIST_FILES = [
     "README.md",
+    "LICENSE",
     "requirements.txt",
     "vercel.json",
     "pyproject.toml",
@@ -39,7 +40,6 @@ def create_and_push_github():
                     k, v = line.split("=", 1)
                     env_vars[k.strip()] = v.strip()
 
-    # 1. MANDATORY PRE-PUSH PRIVACY FIREWALL CHECK
     if not audit_git_staging():
         print("[ABORT] GitHub push aborted by Privacy Firewall.")
         return False
