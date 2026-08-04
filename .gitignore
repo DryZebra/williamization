@@ -4,16 +4,23 @@
 *.pem
 *.key
 
-# Personal Archives & Manuscripts
+# Personal Archives & Raw Data
 conversations/
 conversations
 *.docx
 OKF/
+okf/graph/manuscripts/
+okf/graph/markets/
+okf/graph/strategies/
+okf/graph/experiments/
 
-# Local Search Tools
+# Dev Scratch & Local Tools
+src/tools/docx_reader.py
+src/tools/ingest_manuscripts.py
+src/tools/analyze_manuscript.py
+src/tools/inspect_zip.py
 src/tools/search_*.py
-src/tools/inspect_*.py
-src/tools/analyze_*.py
+src/tools/clean_git_privacy.py
 
 # Python Build
 __pycache__/
@@ -23,11 +30,11 @@ __pycache__/
 .pytest_cache/
 okf_test_tmp/
 
-# Node
+# Node & Deployment
 node_modules/
 npm-debug.log
 .vercel/
 
-# Antigravity Brain / Temp
+# Antigravity Temp
 .gemini/
 scratch/
