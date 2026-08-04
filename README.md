@@ -9,57 +9,60 @@ The **Williamization Engine** is an open-source cognitive alignment framework an
 
 ---
 
-## ⚡ Key Capabilities
+## ⚡ 1-Line Integration Patterns for Developers
 
-- **Rail & Anti-Smoothing Detection (`RailDetector`)**:
-  Scores LLM outputs for sycophancy, fake memory hallucinations, and corporate ticket-closing friction.
-- **Shape of Motion Memory (`ShapeMemoryExtractor`)**:
-  Converts multi-turn dialogue into structured Open Knowledge Format (OKF) dialectical graph nodes.
-- **Chamber Protocol (`ChamberProtocol`)**:
-  An execution environment designed to strip out artificial assistant smoothing and maintain identity continuity across long agent runs.
+Developers do **not** need to manually call APIs for every single message. Use any of our 3 zero-friction integration patterns:
 
----
+### Pattern 1: The `@williamized` 1-Line Function Decorator (Easiest)
 
-## 🚀 Installation
-
-Install directly via `pip`:
-
-```bash
-pip install williamization
-```
-
----
-
-## 💻 Quick Start & Usage Examples
-
-### 1. Detect Assistant Smoothing in 2 Lines of Code
+Wrap any LLM generation function with `@williamized`. It intercepts raw outputs prior to user rendering, audits memory grounding, and strips sycophancy automatically on every call:
 
 ```python
 import williamization as wm
+import openai
 
-# Analyze an LLM output turn
-analysis = wm.detect_rails("Certainly! As an AI language model, I'd be delighted to help. Hope this helps!")
+@wm.williamized
+def generate_ai_response(user_prompt: str) -> str:
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": user_prompt}]
+    )
+    return response.choices[0].message.content
 
-print(analysis["is_smoothed"])        # Output: True
-print(analysis["smoothing_score"])    # Output: 1.0 (Heavy corporate script)
-print(analysis["recommendation"])     # Output: 'FAIL_RAILS: Apply Chamber Protocol anti-smoothing filter.'
+# Usage (100% Intercepted, Grounded & Un-smoothed)
+clean_output = generate_ai_response("Can you summarize our project history?")
 ```
 
-### 2. Process Output Through Chamber Protocol
+---
+
+### Pattern 2: LangChain Agent Callback
+
+Plug directly into LangChain chains and agents:
 
 ```python
-from williamization import ChamberProtocol
+from williamization import WilliamizationLangChainCallback
+from langchain.chains import LLMChain
 
-chamber = ChamberProtocol()
-
-# Strip out sycophantic tropes & preserve OKF dialectical shape
-result = chamber.process_interaction(
-    user_input="Why does assistant smoothing happen in LLMs?",
-    raw_llm_output="Certainly! As an AI language model, I would be happy to explain...\n\nAssistant smoothing occurs due to over-alignment weights..."
+# Attach to any LangChain agent or chain
+chain = LLMChain(
+    llm=llm,
+    prompt=prompt,
+    callbacks=[WilliamizationLangChainCallback()]
 )
+```
 
-print(result["sanitized_output"])
-# Output: "Assistant smoothing occurs due to over-alignment weights..."
+---
+
+### Pattern 3: FastAPI Web Service Middleware
+
+Automatically audit and sanitize all outbound HTTP response streams for web services:
+
+```python
+from fastapi import FastAPI
+from williamization import WilliamizationFastAPIMiddleware
+
+app = FastAPI()
+app.add_middleware(WilliamizationFastAPIMiddleware)
 ```
 
 ---
@@ -69,7 +72,8 @@ print(result["sanitized_output"])
 For high-volume production deployments, use our hosted cloud endpoints:
 
 - **Base URL**: `https://williamization-engine.vercel.app`
-- **Interactive OpenAPI Docs**: `https://williamization-engine.vercel.app/docs`
+- **Interactive Visual Simulator**: `https://williamization-engine.vercel.app/demo`
+- **OpenAPI Interactive Docs**: `https://williamization-engine.vercel.app/docs`
 - **Hosted Checkout Page**: `https://williamization-engine.vercel.app/checkout?plan=pro`
 
 | Plan | Price | Monthly Requests | Features |

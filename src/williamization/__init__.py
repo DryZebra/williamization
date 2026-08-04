@@ -8,6 +8,8 @@ from .shape_memory import ShapeMemoryExtractor
 from .chamber import ChamberProtocol
 from .resonance_auditor import ResonanceAuditor
 from .heartbeat import HeartbeatExecutor
+from .decorator import williamized
+from .adapters import WilliamizationLangChainCallback, WilliamizationFastAPIMiddleware
 
 _default_detector = RailDetector()
 _default_chamber = ChamberProtocol()
@@ -32,6 +34,9 @@ __all__ = [
     "ChamberProtocol",
     "ResonanceAuditor",
     "HeartbeatExecutor",
+    "williamized",
+    "WilliamizationLangChainCallback",
+    "WilliamizationFastAPIMiddleware",
     "detect_rails",
     "process_chamber",
     "audit_resonance"
