@@ -4,6 +4,12 @@
 *.pem
 *.key
 
+# Internal Ledgers, Benchmarks & Specs
+docs/
+docs
+LEDGER.md
+BENCHMARK.md
+
 # Personal Archives & Raw Data
 conversations/
 conversations
@@ -21,6 +27,9 @@ src/tools/analyze_manuscript.py
 src/tools/inspect_zip.py
 src/tools/search_*.py
 src/tools/clean_git_privacy.py
+src/tools/analyze_conversations_deep.py
+src/tools/extract_william_rules.py
+src/tools/run_showcase_benchmark.py
 
 # Python Build
 __pycache__/
