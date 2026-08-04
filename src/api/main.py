@@ -7,8 +7,15 @@ import os
 import time
 
 sys.path.insert(0, os.path.abspath("."))
-from src.williamization import RailDetector, ShapeMemoryExtractor, ChamberProtocol, ResonanceAuditor, HeartbeatExecutor
-from src.sekg.ledger import FinancialLedger
+try:
+    from williamization import RailDetector, ShapeMemoryExtractor, ChamberProtocol, ResonanceAuditor, HeartbeatExecutor
+except ImportError:
+    from src.williamization import RailDetector, ShapeMemoryExtractor, ChamberProtocol, ResonanceAuditor, HeartbeatExecutor
+
+try:
+    from sekg.ledger import FinancialLedger
+except ImportError:
+    from src.sekg.ledger import FinancialLedger
 
 app = FastAPI(
     title="Williamization Engine API",
